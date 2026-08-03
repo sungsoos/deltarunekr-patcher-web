@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "웹 기반 델타룬 한국어 패처",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "bun run server.js",
     "dev": "bun --watch server.js",
