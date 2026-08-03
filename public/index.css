@@ -1,0 +1,379 @@
+@font-face {
+  font-family: '델타돋움KR';
+  src: url('/assets/DeltaDotumKR.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --bg-dark: #000000;
+  --text-main: #ffffff;
+  --text-dim: #888888;
+  --accent-yellow: #ffff00;
+  --accent-green: #00ff00;
+  --accent-red: #ff5555;
+  --font-family: '델타돋움KR', 'Courier New', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  color: var(--text-main);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+::selection {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+::-moz-selection {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+body {
+  background-color: var(--bg-dark);
+  min-height: 100vh;
+  margin: 0;
+}
+
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  width: 100%;
+  max-width: 640px;
+  border-bottom: 2px dashed #333333;
+}
+
+.app-logo {
+  width: 45px;
+  height: 45px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  object-fit: contain;
+}
+
+.app-title {
+  font-size: 45px;
+  font-weight: normal;
+  letter-spacing: 1px;
+}
+
+.mac-warning-banner {
+  width: 100%;
+  max-width: 640px;
+  background-color: rgba(255, 85, 85, 0.1);
+  border: 2px solid var(--accent-red);
+  color: var(--accent-red);
+  padding: 12px 16px;
+  font-size: 30px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.main-content {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.mode-toggle-container {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.mode-tab {
+  background: transparent;
+  border: 1px solid #333333;
+  color: #888888;
+  font-size: 30px;
+  padding: 6px 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.mode-tab:hover:not(:disabled) {
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+}
+
+.mode-tab.active {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.mode-tab:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #222222;
+  color: #444444;
+}
+
+.patch-group-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background-color: #000000;
+  border: 2px solid #ffffff;
+  padding: 20px;
+}
+
+.divider-line {
+  width: 100%;
+  border-bottom: 1px dashed #333333;
+  margin: 4px 0;
+}
+
+.text-button {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 40px;
+  cursor: pointer;
+  padding: 6px 12px;
+  text-align: center;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-button::before {
+  content: '';
+  display: none;
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+  background-image: url('/assets/heart.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  margin-right: 8px;
+}
+
+.text-button:hover:not(:disabled) {
+  color: var(--accent-yellow);
+}
+
+.text-button:hover:not(:disabled)::before {
+  display: inline-block;
+}
+
+.text-button:disabled {
+  color: #444444;
+  cursor: not-allowed;
+}
+
+.text-button-large {
+  font-size: 40px;
+  width: 100%;
+  padding: 10px;
+}
+
+.text-button-large::before {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.btn-launch {
+  color: #00ff00;
+  margin-top: 4px;
+}
+
+.btn-launch:hover {
+  color: var(--accent-yellow);
+}
+
+.text-button-subtle {
+  background: transparent;
+  border: none;
+  color: #888888;
+  font-size: 30px;
+  cursor: pointer;
+  outline: none;
+  padding: 2px 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.text-button-subtle::before {
+  content: '';
+  display: none;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-image: url('/assets/heart.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  margin-right: 6px;
+}
+
+.text-button-subtle:hover {
+  color: var(--accent-yellow);
+}
+
+.text-button-subtle:hover::before {
+  display: inline-block;
+}
+
+.status-message {
+  font-size: 30px;
+  color: var(--accent-yellow);
+  text-align: center;
+  min-height: 24px;
+}
+
+.log-details {
+  border: 2px solid #222222;
+  background: #050505;
+  padding: 12px 16px;
+}
+
+.log-summary {
+  font-size: 30px;
+  color: var(--text-dim);
+  cursor: pointer;
+  outline: none;
+  list-style: none;
+  padding: 2px 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.log-summary::before {
+  content: '';
+  display: none;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-image: url('/assets/heart.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  margin-right: 8px;
+}
+
+.log-summary:hover {
+  color: var(--accent-yellow);
+}
+
+.log-summary:hover::before {
+  display: inline-block;
+}
+
+.log-summary::-webkit-details-marker {
+  display: none;
+}
+
+.log-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #333333;
+}
+
+.log-title {
+  font-size: 30px;
+  color: #888888;
+}
+
+.log-console,
+.log-console * {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.log-console {
+  margin-top: 10px;
+  height: 200px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 30px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background-color: #000000;
+  border: 1px solid #1a1a1a;
+  padding: 12px;
+}
+
+.log-console::-webkit-scrollbar {
+  width: 8px;
+}
+.log-console::-webkit-scrollbar-track {
+  background: #000000;
+}
+.log-console::-webkit-scrollbar-thumb {
+  background: #ffffff;
+}
+
+.log-line {
+  word-break: break-all;
+}
+
+.app-footer {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 18px;
+  border-top: 1px dashed #222222;
+  font-size: 25px;
+  color: #666666;
+}
+
+.platform-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.platform-select {
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #333333;
+  padding: 4px 8px;
+  font-size: 25px;
+  outline: none;
+  cursor: pointer;
+}
+
+.platform-select:hover {
+  border-color: var(--accent-yellow);
+}

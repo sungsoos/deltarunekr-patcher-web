@@ -1,0 +1,16 @@
+{
+  "name": "deltarunekr-patcher-web",
+  "version": "1.0.0",
+  "description": "웹 기반 델타룬 한국어 패처",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "bun run server.js",
+    "dev": "bun --watch server.js",
+    "build:wasm": "docker run --rm -v \"$(pwd):/src\" -u \"$(id -u):$(id -g)\" emscripten/emsdk emcc xdelta_src/xdelta3.c -Ixdelta_src -O3 -DSIZEOF_SIZE_T=4 -DSIZEOF_UNSIGNED_LONG_LONG=8 -DXD3_STDIO=0 -DXD3_DEBUG=0 -DXD3_MAIN=0 -DSECONDARY_DJW=0 -DSECONDARY_FGK=0 -DSECONDARY_LZMA=0 -DREGRESSION_TEST=0 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=2147483648 -s INITIAL_MEMORY=67108864 -s EXPORTED_FUNCTIONS=\"['_xd3_decode_memory', '_malloc', '_free']\" -s EXPORTED_RUNTIME_METHODS=\"['ccall', 'cwrap', 'getValue', 'setValue', 'HEAPU8']\" -s EXPORT_NAME=\"createXdeltaModule\" -s MODULARIZE=1 -o public/xdelta3.js"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DELTARUNE 한글 패처</title>
+  <link rel="icon" type="image/x-icon" href="/assets/icon.ico">
+  <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <img src="/assets/icon.png" alt="델타룬 아이콘" class="app-logo" onerror="this.style.display='none'">
+      <h1 class="app-title">DELTARUNE 한글 패처</h1>
+    </header>
+
+    <div class="mac-warning-banner" id="macWarningBanner" style="display: none;">
+      [경고] macOS는 현재 지원되지 않습니다. (Windows 전용)
+    </div>
+
+    <main class="main-content">
+      <div class="mode-toggle-container">
+        <button class="mode-tab active" id="tabFolderMode" type="button">폴더 패치</button>
+        <button class="mode-tab" id="tabZipMode" type="button">압축 파일 패치</button>
+      </div>
+
+      <div class="status-message" id="statusMessage">델타룬이 설치된 폴더를 선택해주세요.</div>
+
+      <div class="patch-group-box">
+        <button class="text-button" id="btnSelectFolder">
+          폴더 선택
+        </button>
+        <button class="text-button" id="btnSelectZip" style="display: none;">
+          ZIP 파일 선택
+        </button>
+        <input type="file" id="zipFileInput" accept=".zip" style="display: none;">
+
+        <div class="divider-line"></div>
+
+        <button class="text-button text-button-large" id="btnStartPatch" disabled>
+          패치 적용
+        </button>
+
+        <a class="text-button text-button-large btn-launch" id="btnLaunchGame" href="steam://rungameid/1671210" style="display: none; text-decoration: none;">
+          델타룬 실행하기
+        </a>
+      </div>
+
+      <details class="log-details" id="logDetails" style="display: none;">
+        <summary class="log-summary">
+          <span>상세 로그</span>
+        </summary>
+        <div class="log-header-bar">
+          <span class="log-title">* 실행 기록</span>
+          <button class="text-button-subtle" id="btnCopyLog" type="button">로그 복사</button>
+        </div>
+        <div class="log-console" id="logConsole"></div>
+      </details>
+    </main>
+
+    <footer class="app-footer">
+      <div class="platform-option">
+        <label for="platformSelect">플랫폼:</label>
+        <select id="platformSelect" class="platform-select">
+          <option value="windows">Windows / Linux</option>
+          <option value="mac">macOS</option>
+        </select>
+      </div>
+      <div class="notice-text" id="noticeText">Chrome / Edge / Opera 브라우저 필요</div>
+    </footer>
+  </div>
+
+  <script src="/jszip.min.js"></script>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
