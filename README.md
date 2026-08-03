@@ -1,6 +1,8 @@
 # [DELTARUNE 한글 패처 Web](https://dtkr.sungsoos.kr)
 dtkrpatchteam에서 제작한 한국어 패치를 웹에서 사용하게 해주는 패처입니다.
 
+## 메인 미러: [https://git.sungsoos.kr/sungsoos/deltarunekr_patcher_web](https://git.sungsoos.kr/sungsoos/deltarunekr_patcher_web)
+
 ## 실행 및 사용 방법
 ### 1. Bun 웹 서버 실행
 ```bash
