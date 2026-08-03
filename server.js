@@ -14,6 +14,7 @@ const MIME_TYPES = {
   ".json": "application/json; charset=utf-8",
   ".wasm": "application/wasm",
   ".png": "image/png",
+  ".gif": "image/gif",
   ".ico": "image/x-icon",
   ".ttf": "font/ttf",
   ".xdelta": "application/octet-stream",
@@ -21,6 +22,39 @@ const MIME_TYPES = {
   ".txt": "text/plain; charset=utf-8",
   ".csv": "text/csv; charset=utf-8",
 };
+
+const HTML_404 = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 Not Found</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #000;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <img src="/assets/404.gif" alt="404 Not Found">
+</body>
+</html>`;
 
 const server = serve({
   port: PORT,
@@ -57,7 +91,10 @@ const server = serve({
       });
     }
 
-    return new Response("404 Not Found", { status: 404 });
+    return new Response(HTML_404, {
+      status: 404,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
   },
 });
 
