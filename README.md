@@ -50,6 +50,6 @@ deltarunekr_patcher_web/
 ```
 
 ## 라이선스 및 참고 사항
-- 델타체: qhtjr1116 제작, 링크: [https://eocnd1116.github.io/qhtjrFont/index.html?type=1&n=0](https://eocnd1116.github.io/qhtjrFont/index.html?type=1&n=0)
+- 델타돋움체: qhtjr1116 제작, 링크: [https://eocnd1116.github.io/qhtjrFont/index.html?type=1&n=0](https://eocnd1116.github.io/qhtjrFont/index.html?type=1&n=0)
 - 한국어 패치: dtkrpatchteam 제작, 링크: [https://www.deltarunekr.kro.kr/](https://www.deltarunekr.kro.kr/)
 - GPL-3.0 라이선스
