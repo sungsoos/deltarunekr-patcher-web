@@ -90,6 +90,18 @@ body {
   font-weight: bold;
 }
 
+.yellow-notice-banner {
+  width: 100%;
+  max-width: 640px;
+  background-color: rgba(255, 255, 0, 0.1);
+  border: 2px solid var(--accent-yellow);
+  color: var(--accent-yellow);
+  padding: 12px 16px;
+  font-size: 30px;
+  text-align: center;
+  font-weight: bold;
+}
+
 .main-content {
   width: 100%;
   max-width: 640px;
@@ -266,35 +278,18 @@ body {
   outline: none;
   list-style: none;
   padding: 2px 0;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-}
-
-.log-summary::before {
-  content: '';
-  display: none;
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  background-image: url('/assets/heart.png');
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  margin-right: 8px;
-}
-
-.log-summary:hover {
-  color: var(--accent-yellow);
-}
-
-.log-summary:hover::before {
-  display: inline-block;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .log-summary::-webkit-details-marker {
   display: none;
+}
+
+#btnCopyLog {
+  margin-left: auto;
 }
 
 .log-header-bar {
@@ -350,12 +345,20 @@ body {
   width: 100%;
   max-width: 640px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   padding-top: 18px;
   border-top: 1px dashed #222222;
   font-size: 25px;
   color: #666666;
+}
+
+.footer-top-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .platform-option {
@@ -376,4 +379,79 @@ body {
 
 .platform-select:hover {
   border-color: var(--accent-yellow);
+}
+
+/* 고급 설정 (v2.1.4 UI) */
+.adv-settings-box {
+  width: 100%;
+  background-color: #000000;
+  border: 2px solid #555555;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+
+.adv-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.adv-form-row label {
+  font-size: 26px;
+  color: #aaaaaa;
+}
+
+.retro-input {
+  width: 100%;
+  background-color: #111111;
+  border: 2px solid #ffffff;
+  color: var(--accent-yellow);
+  font-size: 28px;
+  padding: 8px 12px;
+  outline: none;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
+.retro-input:focus {
+  border-color: var(--accent-yellow);
+  background-color: #1a1a00;
+}
+
+.adv-hint-text {
+  font-size: 22px;
+  color: #888888;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* 도움말 및 커뮤니티 링크 */
+.help-links-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.help-link {
+  font-size: 24px;
+  color: #888888;
+  text-decoration: none;
+}
+
+.help-link:hover {
+  color: var(--accent-yellow);
+  text-decoration: underline;
+}
+
+.help-sep {
+  color: #333333;
+  font-size: 24px;
 }

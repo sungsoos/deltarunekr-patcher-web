@@ -1,3 +1,4 @@
+// .. 아직 부족한 거야?
 // 델타룬 한국어 패처 (웹)
 
 // 변수 선언
@@ -10,6 +11,7 @@ let worker = null;
 let workerReady = false;
 let messageIdCounter = 0;
 const workerPromises = new Map();
+let cachedDeterwillMap = null;
 
 // UI 요소
 const btnSelectFolder = document.getElementById('btnSelectFolder');
@@ -28,6 +30,13 @@ const logDetails = document.getElementById('logDetails');
 const macWarningBanner = document.getElementById('macWarningBanner');
 const noticeText = document.getElementById('noticeText');
 
+// 고급 설정 UI 요소
+const btnToggleAdvSettings = document.getElementById('btnToggleAdvSettings');
+const advSettingsBox = document.getElementById('advSettingsBox');
+const inputDetermination = document.getElementById('inputDetermination');
+const inputWill = document.getElementById('inputWill');
+const inputDess = document.getElementById('inputDess');
+
 // 웹 앱 초기화
 window.addEventListener('DOMContentLoaded', () => {
   // 유저 에이전트로 플랫폼 감지 (macOS 또는 Windows/Linux)
@@ -45,8 +54,14 @@ window.addEventListener('DOMContentLoaded', () => {
     setStatus('이 브라우저는 폴더 선택을 지원하지 않아 ZIP 패치 모드로 전환되었습니다.', '#ffff00');
   }
 
-  // ✨✨웹어셈블리✨✨ 워커 초기화
+  // 웹어셈블리 워커 초기화
   initWorker();
+
+  // 고급설정 토글 및 입력 감지 이벤트
+  btnToggleAdvSettings?.addEventListener('click', toggleAdvSettings);
+  inputDetermination?.addEventListener('input', updatePatchButtonText);
+  inputWill?.addEventListener('input', updatePatchButtonText);
+  inputDess?.addEventListener('input', updatePatchButtonText);
 
   // 리스너(들) 등록
   tabFolderMode?.addEventListener('click', () => setMode('folder'));
@@ -64,7 +79,20 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// 모드 변경하는 그거
+function toggleAdvSettings() {
+  if (!advSettingsBox) return;
+  const isHidden = advSettingsBox.style.display === 'none';
+  if (isHidden) {
+    advSettingsBox.style.display = 'flex';
+    if (btnToggleAdvSettings) btnToggleAdvSettings.textContent = '고급 설정 닫기';
+  } else {
+    advSettingsBox.style.display = 'none';
+    if (btnToggleAdvSettings) btnToggleAdvSettings.textContent = '고급 설정';
+  }
+  updatePatchButtonText();
+}
+
+// 모드 변경
 function setMode(mode) {
   if (patchingInProgress) return; // 패치중에는 모드 변경 금지
 
@@ -98,7 +126,7 @@ function toggleModeTabs(enabled) {
   if (tabZipMode) tabZipMode.disabled = !enabled;
 }
 
-// os 확인 & 비활성화
+// OS 확인 및 상태 갱신
 function checkPlatformSupport() {
   const isMac = platformSelect.value === 'mac';
 
@@ -108,7 +136,6 @@ function checkPlatformSupport() {
   } else {
     if (macWarningBanner) macWarningBanner.style.display = 'none';
     if (selectedDirHandle || zipInstance) {
-      setStatus('패치 준비 완료! [* 패치 적용] 버튼을 누르세요.', '#00ff00');
       btnStartPatch.disabled = false;
     } else btnStartPatch.disabled = true;
   }
@@ -155,7 +182,7 @@ async function copyLog() {
   }
 }
 
-// ✨✨웹어셈블리✨✨ 워커 초기화
+// 웹어셈블리 워커 초기화
 function initWorker() {
   try {
     worker = new Worker('/xdelta3-worker.js');
@@ -200,6 +227,119 @@ function runWasmPatch(targetBuffer, deltaBuffer) {
   });
 }
 
+// 한국어 조사 교정 및 단어 치환 엔진 (매우 사악한 핵)
+function adjustJosa(word, josa) {
+  if (!word || word.length === 0) return word + josa;
+  const lastChar = word.charAt(word.length - 1);
+  const code = lastChar.charCodeAt(0);
+  if (code < 0xac00 || code > 0xd7a3) {
+    return word + josa;
+  }
+  const jongseongIdx = (code - 0xac00) % 28;
+  const hasJongseong = jongseongIdx > 0;
+  const isRieul = jongseongIdx === 8;
+
+  if (['을', '를'].includes(josa)) {
+    return word + (hasJongseong ? '을' : '를');
+  }
+  if (['이', '가'].includes(josa)) {
+    return word + (hasJongseong ? '이' : '가');
+  }
+  if (['은', '는'].includes(josa)) {
+    return word + (hasJongseong ? '은' : '는');
+  }
+  if (['과', '와'].includes(josa)) {
+    return word + (hasJongseong ? '과' : '와');
+  }
+  if (['으로', '로'].includes(josa)) {
+    return word + (hasJongseong && !isRieul ? '으로' : '로');
+  }
+  return word + josa;
+}
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function replaceWordWithJosa(text, oldWord, newWord) {
+  if (!text || !oldWord || !newWord) return text;
+  const safeOldWord = escapeRegExp(oldWord);
+  const pattern = new RegExp(`${safeOldWord}(을|를|이|가|은|는|으로|로|과|와)?`, 'g');
+  return text.replace(pattern, (match, josa) => {
+    if (josa) {
+      return adjustJosa(newWord, josa);
+    }
+    return newWord;
+  });
+}
+
+async function fetchDeterwillMap() {
+  if (cachedDeterwillMap) return cachedDeterwillMap;
+  try {
+    const resp = await fetch('/patch/deterwill.json');
+    if (resp.ok) {
+      cachedDeterwillMap = await resp.json();
+    }
+  } catch (err) {
+    console.warn('deterwill.json 로드 실패:', err);
+  }
+  return cachedDeterwillMap;
+}
+
+function getCustomWordsFromUI() {
+  return {
+    determination: inputDetermination?.value?.trim() || '의지',
+    will: inputWill?.value?.trim() || '결의',
+    dess: inputDess?.value?.trim() || '데스'
+  };
+}
+
+function isCustomWordsActive(customWords = getCustomWordsFromUI()) {
+  return customWords.determination !== '의지' ||
+         customWords.will !== '결의' ||
+         customWords.dess !== '데스';
+}
+
+function updatePatchButtonText() {
+  return;
+}
+
+async function applyCustomWordsToLangData(langData, chapterNum, customWords) {
+  const deterwillMap = await fetchDeterwillMap();
+  if (!deterwillMap || !deterwillMap[String(chapterNum)]) return langData;
+  if (!isCustomWordsActive(customWords)) return langData;
+
+  const categories = {
+    determination: '의지',
+    will: '결의',
+    dess: '데스'
+  };
+
+  const chData = deterwillMap[String(chapterNum)];
+  let modifiedCount = 0;
+
+  for (const cat of ['determination', 'will', 'dess']) {
+    const newWord = customWords[cat];
+    const oldWord = categories[cat];
+
+    if (newWord && newWord !== oldWord) {
+      const keysToChange = chData[cat] || [];
+      for (const key of keysToChange) {
+        if (langData[key]) {
+          langData[key] = replaceWordWithJosa(String(langData[key]), oldWord, newWord);
+          modifiedCount++;
+        }
+      }
+    }
+  }
+
+  if (modifiedCount > 0) {
+    addLog(`  * 챕터 ${chapterNum} 고급설정 적용: ${modifiedCount}개 문구 치환 및 조사 교정 완료`, '#ffff00');
+  }
+
+  return langData;
+}
+
 // 폴더 선택 & 검증
 async function selectFolder() {
   if (platformSelect.value === 'mac') {
@@ -208,7 +348,7 @@ async function selectFolder() {
   }
 
   if (!('showDirectoryPicker' in window)) {
-    setStatus('폴더 선택 브라우저입니다. ZIP 모드로 전환합니다.', '#ffff00');
+    setStatus('폴더 선택 미지원 브라우저입니다. 압축 파일로 전환합니다.', '#ffff00');
     setMode('zip');
     return;
   }
@@ -222,7 +362,7 @@ async function selectFolder() {
     const validation = await validateDeltaruneFolder(selectedDirHandle);
 
     if (validation.isValid) {
-      setStatus('패치 준비 완료! [* 패치 적용] 버튼을 누르세요.', '#00ff00');
+      setStatus('패치 준비 완료!', '#00ff00');
       addLog(`* 선택된 폴더: ${selectedDirHandle.name} (게임 감지 성공)`, '#00ff00');
       btnStartPatch.disabled = false;
     } else {
@@ -401,7 +541,7 @@ async function startPatching() {
   }
 }
 
-// 폴더 패치를 위한 함수
+// 폴더 패치
 async function startFolderPatching() {
   patchingInProgress = true;
   toggleModeTabs(false);
@@ -442,13 +582,14 @@ async function startFolderPatching() {
     addLog('--- 언어 파일 복사 중 ---', '#ffff00');
     await copyLanguageFiles(selectedDirHandle);
 
-    setStatus('한글 패치가 성공적으로 완료되었습니다.', '#00ff00');
+    setStatus('한글 패치가 성공적으로 완료되었습니다!', '#00ff00');
     addLog('--- 패치가 성공적으로 완료되었습니다! ---', '#00ff00');
-    addLog('* 한글 패치가 성공적으로 완료되었습니다!', '#00ff00');
+    addLog('* 한글 패치가 성공적으로 끝나셨습니다. 당신은 이제 델타룬을 즐길 수 있습니다.', '#00ff00');
     if (btnLaunchGame) btnLaunchGame.style.display = 'inline-flex';
   } catch (err) {
     setStatus('오류 발생: ' + err.message, '#ff5555');
     addLog(`* 오류 발생: ${err.message}`, '#ff5555');
+    addLog('* 패치 실패 시 원본 파일 복구를 위해 [스팀 무결성 검사]를 진행해보세요.', '#ffff00');
   } finally {
     patchingInProgress = false;
     toggleModeTabs(true);
@@ -457,7 +598,7 @@ async function startFolderPatching() {
   }
 }
 
-// 압축 파일 패치를 위한 함수
+// 압축 파일 패치
 async function startZipPatching() {
   patchingInProgress = true;
   toggleModeTabs(false);
@@ -477,6 +618,8 @@ async function startZipPatching() {
     if (!validation.isValid) {
       throw new Error(validation.errorMsg);
     }
+
+    const customWords = getCustomWordsFromUI();
 
     // 런처
     setStatus('런처 데이터 패치 중...', '#ffff00');
@@ -523,8 +666,25 @@ async function startZipPatching() {
           for (const filePath of folderFiles) {
             const fileResp = await fetch(`/patch/lang/${filePath}`);
             if (fileResp.ok) {
-              const blob = await fileResp.blob();
-              zipInstance.file(basePrefix + filePath, blob);
+              let fileData;
+              if (filePath.endsWith('lang_ja.json')) {
+                const text = await fileResp.text();
+                try {
+                  let langData = JSON.parse(text);
+                  const match = filePath.match(/chapter(\d+)_windows/);
+                  if (match) {
+                    const chapterNum = parseInt(match[1], 10);
+                    langData = await applyCustomWordsToLangData(langData, chapterNum, customWords);
+                  }
+                  fileData = JSON.stringify(langData, null, 2);
+                } catch (parseErr) {
+                  fileData = text;
+                }
+              } else {
+                fileData = await fileResp.blob();
+              }
+
+              zipInstance.file(basePrefix + filePath, fileData);
               copiedCount++;
             }
           }
@@ -571,6 +731,7 @@ async function startZipPatching() {
     setStatus('한글 패치가 성공적으로 완료되었습니다!', '#00ff00');
     addLog('--- 패치된 압축 파일 다운로드 성공! ---', '#00ff00');
     addLog('* 한글 패치가 성공적으로 완료되었습니다! (DELTARUNE_PATCHED.zip 다운로드됨)', '#00ff00');
+    if (btnLaunchGame) btnLaunchGame.style.display = 'inline-flex';
   } catch (err) {
     setStatus('패치 오류: ' + err.message, '#ff5555');
     addLog(`* 오류 발생: ${err.message}`, '#ff5555');
@@ -582,7 +743,7 @@ async function startZipPatching() {
   }
 }
 
-// 파일을 패치하는 함수
+// 단일 파일 패치
 async function patchSingleFile(fileHandle, deltaUrl, label) {
   const patchResp = await fetch(deltaUrl);
   if (!patchResp.ok) {
@@ -615,6 +776,7 @@ async function patchSingleFileWithResp(fileHandle, response, label) {
 // 언어 파일 복사 함수
 async function copyLanguageFiles(rootDirHandle) {
   const langSubdirs = ['chapter1_windows', 'chapter2_windows', 'chapter3_windows', 'chapter4_windows', 'chapter5_windows'];
+  const customWords = getCustomWordsFromUI();
   
   for (const langDirName of langSubdirs) {
     try {
@@ -627,7 +789,26 @@ async function copyLanguageFiles(rootDirHandle) {
         for (const filePath of folderFiles) {
           const fileResp = await fetch(`/patch/lang/${filePath}`);
           if (fileResp.ok) {
-            const blob = await fileResp.blob();
+            let blob;
+            if (filePath.endsWith('lang_ja.json')) {
+              const text = await fileResp.text();
+              try {
+                let langData = JSON.parse(text);
+                const match = filePath.match(/chapter(\d+)_windows/);
+                if (match) {
+                  const chapterNum = parseInt(match[1], 10);
+                  langData = await applyCustomWordsToLangData(langData, chapterNum, customWords);
+                }
+                const modifiedJson = JSON.stringify(langData, null, 2);
+                blob = new Blob([modifiedJson], { type: 'application/json' });
+              } catch (parseErr) {
+                console.warn('lang_ja.json 파싱 실패:', parseErr);
+                blob = new Blob([text], { type: 'application/json' });
+              }
+            } else {
+              blob = await fileResp.blob();
+            }
+
             const parts = filePath.split('/');
             const targetDir = await ensureDir(rootDirHandle, parts.slice(0, -1));
             const targetFileHandle = await targetDir.getFileHandle(parts[parts.length - 1], { create: true });

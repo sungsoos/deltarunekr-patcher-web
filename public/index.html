@@ -1,76 +1,112 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DELTARUNE 한글 패처</title>
-  <link rel="icon" type="image/x-icon" href="/assets/icon.ico">
-  <link rel="stylesheet" href="/index.css">
-</head>
-<body>
-  <div class="app-container">
-    <header class="app-header">
-      <img src="/assets/icon.png" alt="델타룬 아이콘" class="app-logo" onerror="this.style.display='none'">
-      <h1 class="app-title">DELTARUNE 한글 패처</h1>
-    </header>
 
-    <div class="mac-warning-banner" id="macWarningBanner" style="display: none;">
-      [경고] macOS는 현재 지원되지 않습니다. (Windows 전용)
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DELTARUNE 한글 패처</title>
+    <link rel="icon" type="image/x-icon" href="/assets/icon.ico">
+    <link rel="stylesheet" href="/index.css">
+  </head>
+  <body>
+    <!-- ... 흥미로운걸 찾아? https://git.sungsoos.kr/sungsoos/deltarunekr_patcher_web -->
+    <div class="app-container">
+      <header class="app-header">
+        <img src="/assets/icon.png" class="app-logo" onerror="this.style.display='none'">
+        <h1 class="app-title">DELTARUNE 한글 패처</h1>
+      </header>
+
+      <div class="mac-warning-banner" id="macWarningBanner" style="display: none;">
+        ⚠️ macOS는 현재 지원되지 않습니다.
+      </div>
+
+      <div class="yellow-notice-banner" id="yellowNoticeBanner">
+        ⚠️ 보안 상, 폴더 패치를 진행 시 브라우저에서 게임 폴더를 선택하는 것을 막을수 있습니다.
+      </div>
+
+      <main class="main-content">
+        <div class="mode-toggle-container">
+          <button class="mode-tab active" id="tabFolderMode" type="button">폴더</button>
+          <button class="mode-tab" id="tabZipMode" type="button">압축 파일</button>
+        </div>
+
+        <div class="status-message" id="statusMessage">델타룬이 설치된 폴더를 선택해주세요.</div>
+
+        <div class="patch-group-box">
+          <button class="text-button" id="btnSelectFolder">
+            폴더 선택
+          </button>
+          <button class="text-button" id="btnSelectZip" style="display: none;">
+            파일 선택
+          </button>
+          <input type="file" id="zipFileInput" accept=".zip" style="display: none;">
+
+          <div class="divider-line"></div>
+
+          <button class="text-button" id="btnToggleAdvSettings" type="button">
+            고급 설정
+          </button>
+
+          <div class="adv-settings-box" id="advSettingsBox" style="display: none;">
+            <div class="adv-form-row">
+              <label for="inputDetermination">determination 명칭 (기본: 의지)</label>
+              <input type="text" id="inputDetermination" class="retro-input" value="의지" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="adv-form-row">
+              <label for="inputWill">will 명칭 (기본: 결의)</label>
+              <input type="text" id="inputWill" class="retro-input" value="결의" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="adv-form-row">
+              <label for="inputDess">dess 명칭 (기본: 데스)</label>
+              <input type="text" id="inputDess" class="retro-input" value="데스" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="adv-hint-text">
+              * 지정한 명칭에 맞춰 웹 패칭 시 한국어 조사(을/를, 이/가, 은/는, 과/와, 으로/로)가 자동 교정되어 적용됩니다.
+            </div>
+          </div>
+
+          <div class="divider-line"></div>
+
+          <button class="text-button text-button-large" id="btnStartPatch" disabled>
+            패치 적용
+          </button>
+
+          <a class="text-button text-button-large btn-launch" id="btnLaunchGame" href="steam://rungameid/1671210" style="display: none; text-decoration: none;">
+            스팀으로 델타룬 실행하기
+          </a>
+        </div>
+
+        <details class="log-details" id="logDetails" style="display: none;">
+          <summary class="log-summary">
+            <span>패처 로그</span>
+            <button class="text-button-subtle" id="btnCopyLog" type="button">로그 복사</button>
+          </summary>
+          <div class="log-console" id="logConsole"></div>
+        </details>
+      </main>
+
+      <footer class="app-footer">
+        <div class="footer-top-row">
+          <div class="platform-option">
+            <label for="platformSelect">플랫폼:</label>
+            <select id="platformSelect" class="platform-select">
+              <option value="windows">Windows / Linux</option>
+              <option value="mac">macOS</option>
+            </select>
+          </div>
+          <div class="notice-text" id="noticeText">Chrome / Edge / Opera 브라우저 필요</div>
+        </div>
+        <div class="help-links-box">
+          <a href="steam://validate/1671210" class="help-link" id="linkSteamVerify">스팀 무결성 검사</a>
+          <span class="help-sep">|</span>
+          <a href="https://discord.gg/hfDtabqhB4" target="_blank" rel="noopener noreferrer" class="help-link">공식 디스코드</a>
+          <span class="help-sep">|</span>
+          <a href="https://www.deltarunekr.kro.kr/" target="_blank" rel="noopener noreferrer" class="help-link">공식 웹사이트</a>
+        </div>
+      </footer>
     </div>
 
-    <main class="main-content">
-      <div class="mode-toggle-container">
-        <button class="mode-tab active" id="tabFolderMode" type="button">폴더 패치</button>
-        <button class="mode-tab" id="tabZipMode" type="button">압축 파일 패치</button>
-      </div>
-
-      <div class="status-message" id="statusMessage">델타룬이 설치된 폴더를 선택해주세요.</div>
-
-      <div class="patch-group-box">
-        <button class="text-button" id="btnSelectFolder">
-          폴더 선택
-        </button>
-        <button class="text-button" id="btnSelectZip" style="display: none;">
-          ZIP 파일 선택
-        </button>
-        <input type="file" id="zipFileInput" accept=".zip" style="display: none;">
-
-        <div class="divider-line"></div>
-
-        <button class="text-button text-button-large" id="btnStartPatch" disabled>
-          패치 적용
-        </button>
-
-        <a class="text-button text-button-large btn-launch" id="btnLaunchGame" href="steam://rungameid/1671210" style="display: none; text-decoration: none;">
-          델타룬 실행하기
-        </a>
-      </div>
-
-      <details class="log-details" id="logDetails" style="display: none;">
-        <summary class="log-summary">
-          <span>상세 로그</span>
-        </summary>
-        <div class="log-header-bar">
-          <span class="log-title">* 실행 기록</span>
-          <button class="text-button-subtle" id="btnCopyLog" type="button">로그 복사</button>
-        </div>
-        <div class="log-console" id="logConsole"></div>
-      </details>
-    </main>
-
-    <footer class="app-footer">
-      <div class="platform-option">
-        <label for="platformSelect">플랫폼:</label>
-        <select id="platformSelect" class="platform-select">
-          <option value="windows">Windows / Linux</option>
-          <option value="mac">macOS</option>
-        </select>
-      </div>
-      <div class="notice-text" id="noticeText">Chrome / Edge / Opera 브라우저 필요</div>
-    </footer>
-  </div>
-
-  <script src="/jszip.min.js"></script>
-  <script type="module" src="/app.js"></script>
-</body>
+    <script src="/jszip.min.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
 </html>
