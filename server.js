@@ -106,9 +106,7 @@ function serveFile(filePath) {
   return new Response(file, {
     headers: {
       "Content-Type": contentType,
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0",
+      "Cache-Control": "no-cache",
       "Access-Control-Allow-Origin": "*",
     },
   });
