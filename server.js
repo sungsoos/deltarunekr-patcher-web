@@ -103,12 +103,13 @@ function serveFile(filePath) {
   const contentType = MIME_TYPES[ext] || "application/octet-stream";
   const file = Bun.file(filePath);
 
+  const isStaticAsset = [".css", ".js", ".ttf", ".png", ".gif", ".ico", ".wasm"].includes(ext);
+  const cacheControl = isStaticAsset ? "public, max-age=3600" : "no-cache";
+
   return new Response(file, {
     headers: {
       "Content-Type": contentType,
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0",
+      "Cache-Control": cacheControl,
       "Access-Control-Allow-Origin": "*",
     },
   });
