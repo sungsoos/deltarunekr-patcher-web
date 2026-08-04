@@ -1,6 +1,6 @@
 @font-face {
   font-family: '델타돋움KR';
-  src: url('./assets/DeltaDotumKR.ttf') format('truetype'), url('/assets/DeltaDotumKR.ttf') format('truetype');
+  src: url('/assets/DeltaDotumKR.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
@@ -12,7 +12,7 @@
   --accent-yellow: #ffff00;
   --accent-green: #00ff00;
   --accent-red: #ff5555;
-  --font-family: '델타돋움KR', 'Galmuri11', 'Malgun Gothic', 'Dotum', 'Courier New', sans-serif, monospace;
+  --font-family: '델타돋움KR', 'Courier New', monospace;
 }
 
 * {
@@ -180,7 +180,7 @@ body {
   width: 25px;
   height: 25px;
   flex-shrink: 0;
-  background-image: url('./assets/heart.png'), url('/assets/heart.png');
+  background-image: url('/assets/heart.png');
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -241,7 +241,7 @@ body {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  background-image: url('./assets/heart.png'), url('/assets/heart.png');
+  background-image: url('/assets/heart.png');
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
