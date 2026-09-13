@@ -127,17 +127,29 @@ function toggleModeTabs(enabled) {
 }
 
 // OS 확인 및 상태 갱신
-function checkPlatformSupport() {
-  const isMac = platformSelect.value === 'mac';
-
-  if (isMac) {
-    if (macWarningBanner) macWarningBanner.style.display = 'block';
-    btnStartPatch.disabled = true;
-  } else {
-    if (macWarningBanner) macWarningBanner.style.display = 'none';
-    if (selectedDirHandle || zipInstance) {
+async function checkPlatformSupport() {
+  if (currentMode === 'folder' && selectedDirHandle) {
+    const validation = await validateDeltaruneFolder(selectedDirHandle);
+    if (validation.isValid) {
+      setStatus('패치 준비 완료!', '#00ff00');
       btnStartPatch.disabled = false;
-    } else btnStartPatch.disabled = true;
+    } else {
+      setStatus('유효한 델타룬 설치 폴더가 아닙니다.', '#ff5555');
+      addLog(`* 플랫폼 변경 감지: ${validation.errorMsg}`, '#ff5555');
+      btnStartPatch.disabled = true;
+    }
+  } else if (currentMode === 'zip' && zipInstance) {
+    const validation = validateZipStructure(zipInstance);
+    if (validation.isValid) {
+      setStatus('패치 준비 완료!', '#00ff00');
+      btnStartPatch.disabled = false;
+    } else {
+      setStatus('유효한 델타룬 .zip 압축 파일이 아닙니다.', '#ff5555');
+      addLog(`* 플랫폼 변경 감지: ${validation.errorMsg}`, '#ff5555');
+      btnStartPatch.disabled = true;
+    }
+  } else {
+    btnStartPatch.disabled = true;
   }
 }
 
@@ -342,11 +354,6 @@ async function applyCustomWordsToLangData(langData, chapterNum, customWords) {
 
 // 폴더 선택 & 검증
 async function selectFolder() {
-  if (platformSelect.value === 'mac') {
-    setStatus('macOS는 현재 지원되지 않습니다.', '#ff5555');
-    return;
-  }
-
   if (!('showDirectoryPicker' in window)) {
     setStatus('폴더 선택 미지원 브라우저입니다. 압축 파일로 전환합니다.', '#ffff00');
     setMode('zip');
@@ -383,11 +390,6 @@ async function handleZipFileSelect(e) {
   const file = e.target.files?.[0];
   if (!file) return;
 
-  if (platformSelect.value === 'mac') {
-    setStatus('macOS는 현재 지원되지 않습니다.', '#ff5555');
-    return;
-  }
-
   selectedZipFile = file;
   setStatus('파일 읽는 중...', '#ffff00');
 
@@ -420,32 +422,42 @@ async function handleZipFileSelect(e) {
 // 압축 파일 구조 검증
 function validateZipStructure(zip) {
   const files = Object.keys(zip.files);
+  const isMac = platformSelect?.value === 'mac';
+  const dataFileName = isMac ? 'data.ios' : 'data.win';
 
   let launcherPath = null;
   for (const path of files) {
-    if (path.endsWith('data.win') || path.endsWith('game.ios')) {
-      if (!path.includes('chapter')) {
-        launcherPath = path;
-        break;
-      }
+    if (path.endsWith(dataFileName) && !path.includes('chapter')) {
+      launcherPath = path;
+      break;
     }
   }
 
   if (!launcherPath) {
-    return { isValid: false, errorMsg: '파일 내에서 data.win을 찾을 수 없습니다.' };
+    return { isValid: false, errorMsg: `파일 내에서 ${dataFileName}을 찾을 수 없습니다.` };
   }
 
   const chapterPaths = [];
   for (let i = 1; i <= 5; i++) {
     let chPath = null;
+    const targetFolder = isMac ? `chapter${i}_mac` : `chapter${i}_windows`;
     for (const path of files) {
-      if (path.includes(`chapter${i}`) && (path.endsWith('data.win') || path.endsWith('game.ios'))) {
+      if (path.includes(targetFolder) && path.endsWith(dataFileName)) {
         chPath = path;
         break;
       }
     }
+    // 하위 호환 폴더명 확인
     if (!chPath) {
-      return { isValid: false, errorMsg: `파일 내에서 챕터 ${i} 데이터 파일(chapter${i}/data.win)을 찾을 수 없습니다.` };
+      for (const path of files) {
+        if (path.includes(`chapter${i}`) && path.endsWith(dataFileName)) {
+          chPath = path;
+          break;
+        }
+      }
+    }
+    if (!chPath) {
+      return { isValid: false, errorMsg: `파일 내에서 챕터 ${i} 데이터 파일(${targetFolder}/${dataFileName})을 찾을 수 없습니다.` };
     }
     chapterPaths.push({ chapter: i, path: chPath });
   }
@@ -481,9 +493,11 @@ async function ensureDir(rootDirHandle, relativePathParts) {
 
 // 델타룬 설치 폴더 검증
 async function validateDeltaruneFolder(dirHandle) {
+  const isMac = platformSelect?.value === 'mac';
+  const dataFileName = isMac ? 'data.ios' : 'data.win';
+
   const launcherCandidates = [
-    ['data.win'],
-    ['game.ios']
+    [dataFileName]
   ];
 
   let launcherHandle = null;
@@ -496,27 +510,25 @@ async function validateDeltaruneFolder(dirHandle) {
   }
 
   if (!launcherHandle) {
-    return { isValid: false, errorMsg: 'data.win을 찾을 수 없습니다.' };
+    return { isValid: false, errorMsg: `${dataFileName}을 찾을 수 없습니다.` };
   }
 
   const chapterHandles = [];
   for (let i = 1; i <= 5; i++) {
-    const folderCandidates = [`chapter${i}_windows`, `chapter${i}`];
+    const targetFolder = isMac ? `chapter${i}_mac` : `chapter${i}_windows`;
+    const folderCandidates = [targetFolder, `chapter${i}`];
 
     let chHandle = null;
     for (const folderName of folderCandidates) {
-      for (const tfName of ['data.win', 'game.ios']) {
-        const handle = await getFileHandle(dirHandle, [folderName, tfName]);
-        if (handle) {
-          chHandle = handle;
-          break;
-        }
+      const handle = await getFileHandle(dirHandle, [folderName, dataFileName]);
+      if (handle) {
+        chHandle = handle;
+        break;
       }
-      if (chHandle) break;
     }
 
     if (!chHandle) {
-      return { isValid: false, errorMsg: `챕터 ${i} 데이터 파일(chapter${i}/data.win)이 존재하지 않습니다.` };
+      return { isValid: false, errorMsg: `챕터 ${i} 데이터 파일(${targetFolder}/${dataFileName})이 존재하지 않습니다.` };
     }
     chapterHandles.push({ chapter: i, handle: chHandle });
   }
@@ -526,10 +538,6 @@ async function validateDeltaruneFolder(dirHandle) {
 
 // 패치 함수
 async function startPatching() {
-  if (platformSelect.value === 'mac') {
-    setStatus('macOS는 현재 지원되지 않습니다.', '#ff5555');
-    return;
-  }
   if (patchingInProgress) return;
 
   if (currentMode === 'folder') {
@@ -562,10 +570,13 @@ async function startFolderPatching() {
       throw new Error(validation.errorMsg);
     }
 
+    const isMac = platformSelect?.value === 'mac';
+    const xdeltaDir = isMac ? 'xdelta_mac' : 'xdelta';
+
     // 런처
     setStatus('런처 패치중...', '#ffff00');
     addLog('--- 런처 패치 ---', '#ffff00');
-    const launcherPatchUrl = '/patch/xdelta/launcher.xdelta';
+    const launcherPatchUrl = `/patch/${xdeltaDir}/launcher.xdelta`;
     await patchSingleFile(validation.launcherHandle, launcherPatchUrl, '런처');
 
     // 챕터 1-5 패치
@@ -573,14 +584,14 @@ async function startFolderPatching() {
       const { chapter, handle } = validation.chapterHandles[i];
       setStatus(`챕터 ${chapter}/5 패치 중...`, '#ffff00');
       addLog(`--- 챕터 ${chapter} 패치 ---`, '#ffff00');
-      const patchUrl = `/patch/xdelta/ch${chapter}.xdelta`;
+      const patchUrl = `/patch/${xdeltaDir}/ch${chapter}.xdelta`;
       await patchSingleFile(handle, patchUrl, `챕터 ${chapter}`);
     }
 
     // 언어 파일
     setStatus('언어 파일 복사 중...', '#ffff00');
     addLog('--- 언어 파일 복사 중 ---', '#ffff00');
-    await copyLanguageFiles(selectedDirHandle);
+    await copyLanguageFiles(selectedDirHandle, isMac);
 
     setStatus('한글 패치가 성공적으로 완료되었습니다!', '#00ff00');
     addLog('--- 패치가 성공적으로 완료되었습니다! ---', '#00ff00');
@@ -621,12 +632,19 @@ async function startZipPatching() {
 
     const customWords = getCustomWordsFromUI();
 
+    const isMac = platformSelect?.value === 'mac';
+    const xdeltaDir = isMac ? 'xdelta_mac' : 'xdelta';
+    const langFolderName = isMac ? 'lang_mac' : 'lang';
+    const langSubdirs = isMac
+      ? ['chapter1_mac', 'chapter2_mac', 'chapter3_mac', 'chapter4_mac', 'chapter5_mac']
+      : ['chapter1_windows', 'chapter2_windows', 'chapter3_windows', 'chapter4_windows', 'chapter5_windows'];
+
     // 런처
     setStatus('런처 데이터 패치 중...', '#ffff00');
     addLog('--- 런처 패치 ---', '#ffff00');
     const launcherEntry = zipInstance.file(validation.launcherPath);
     const launcherBuf = await launcherEntry.async('arraybuffer');
-    const launcherPatchResp = await fetch('/patch/xdelta/launcher.xdelta');
+    const launcherPatchResp = await fetch(`/patch/${xdeltaDir}/launcher.xdelta`);
     const launcherDeltaBuf = await launcherPatchResp.arrayBuffer();
 
     const patchedLauncherBuf = await runWasmPatch(launcherBuf, launcherDeltaBuf);
@@ -639,7 +657,7 @@ async function startZipPatching() {
       addLog(`--- 챕터 ${chapter} 패치 ---`, '#ffff00');
       const chEntry = zipInstance.file(path);
       const chBuf = await chEntry.async('arraybuffer');
-      const chPatchResp = await fetch(`/patch/xdelta/ch${chapter}.xdelta`);
+      const chPatchResp = await fetch(`/patch/${xdeltaDir}/ch${chapter}.xdelta`);
       const chDeltaBuf = await chPatchResp.arrayBuffer();
 
       const patchedChBuf = await runWasmPatch(chBuf, chDeltaBuf);
@@ -654,24 +672,23 @@ async function startZipPatching() {
     const samplePath = validation.launcherPath;
     const basePrefix = samplePath.includes('/') ? samplePath.substring(0, samplePath.lastIndexOf('/') + 1) : '';
 
-    const langSubdirs = ['chapter1_windows', 'chapter2_windows', 'chapter3_windows', 'chapter4_windows', 'chapter5_windows'];
     for (const langDirName of langSubdirs) {
       try {
-        const resp = await fetch(`/api/lang-files?dir=${langDirName}`);
+        const resp = await fetch(`/api/lang-files?dir=${langDirName}&mac=${isMac}`);
         if (resp.ok) {
           const fileList = await resp.json();
           const folderFiles = fileList.filter(f => f.startsWith(langDirName));
           let copiedCount = 0;
 
           for (const filePath of folderFiles) {
-            const fileResp = await fetch(`/patch/lang/${filePath}`);
+            const fileResp = await fetch(`/patch/${langFolderName}/${filePath}`);
             if (fileResp.ok) {
               let fileData;
               if (filePath.endsWith('lang_ja.json')) {
                 const text = await fileResp.text();
                 try {
                   let langData = JSON.parse(text);
-                  const match = filePath.match(/chapter(\d+)_windows/);
+                  const match = filePath.match(/chapter(\d+)_(?:windows|mac)/);
                   if (match) {
                     const chapterNum = parseInt(match[1], 10);
                     langData = await applyCustomWordsToLangData(langData, chapterNum, customWords);
@@ -774,27 +791,30 @@ async function patchSingleFileWithResp(fileHandle, response, label) {
 }
 
 // 언어 파일 복사 함수
-async function copyLanguageFiles(rootDirHandle) {
-  const langSubdirs = ['chapter1_windows', 'chapter2_windows', 'chapter3_windows', 'chapter4_windows', 'chapter5_windows'];
+async function copyLanguageFiles(rootDirHandle, isMac = (platformSelect?.value === 'mac')) {
+  const langSubdirs = isMac
+    ? ['chapter1_mac', 'chapter2_mac', 'chapter3_mac', 'chapter4_mac', 'chapter5_mac']
+    : ['chapter1_windows', 'chapter2_windows', 'chapter3_windows', 'chapter4_windows', 'chapter5_windows'];
+  const langFolderName = isMac ? 'lang_mac' : 'lang';
   const customWords = getCustomWordsFromUI();
   
   for (const langDirName of langSubdirs) {
     try {
-      const resp = await fetch(`/api/lang-files?dir=${langDirName}`);
+      const resp = await fetch(`/api/lang-files?dir=${langDirName}&mac=${isMac}`);
       if (resp.ok) {
         const fileList = await resp.json();
         const folderFiles = fileList.filter(f => f.startsWith(langDirName));
         let copiedCount = 0;
 
         for (const filePath of folderFiles) {
-          const fileResp = await fetch(`/patch/lang/${filePath}`);
+          const fileResp = await fetch(`/patch/${langFolderName}/${filePath}`);
           if (fileResp.ok) {
             let blob;
             if (filePath.endsWith('lang_ja.json')) {
               const text = await fileResp.text();
               try {
                 let langData = JSON.parse(text);
-                const match = filePath.match(/chapter(\d+)_windows/);
+                const match = filePath.match(/chapter(\d+)_(?:windows|mac)/);
                 if (match) {
                   const chapterNum = parseInt(match[1], 10);
                   langData = await applyCustomWordsToLangData(langData, chapterNum, customWords);

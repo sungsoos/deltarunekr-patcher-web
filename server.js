@@ -83,9 +83,13 @@ const server = serve({
     // 언어 파일 목록 api
     if (pathname.startsWith("/api/lang-files")) {
       const isMac = url.searchParams.get("mac") === "true";
+      const filterDir = url.searchParams.get("dir");
       const langFolderName = isMac ? "lang_mac" : "lang";
       const langDir = join(PUBLIC_DIR, "patch", langFolderName);
-      const files = getRecursiveFiles(langDir);
+      let files = getRecursiveFiles(langDir);
+      if (filterDir) {
+        files = files.filter((f) => f.startsWith(filterDir));
+      }
       return new Response(JSON.stringify(files), {
         headers: { "Content-Type": "application/json" },
       });

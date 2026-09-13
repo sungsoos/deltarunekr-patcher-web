@@ -19,7 +19,6 @@ bun --hot server.js
 2. 런처 및 챕터 1~5 파일 자동 검증 후 **[한글 패치 적용하기]** 버튼을 클릭합니다.
 3. 패치 및 한글 언어 파일 복사 완료 후 게임을 실행합니다.
 
-*(주의: 현재 Windows 환경의 Chrome/Edge 브라우저를 지원하며, macOS 환경은 지원 준비 중입니다.)*
 
 ## WebAssembly 재빌드 (필요 시)
 Emscripten Docker 환경을 이용하여 `xdelta3.wasm` 및 `xdelta3.js`를 재빌드할 수 있습니다:
