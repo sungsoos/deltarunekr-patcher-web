@@ -423,7 +423,7 @@ async function handleZipFileSelect(e) {
 function validateZipStructure(zip) {
   const files = Object.keys(zip.files);
   const isMac = platformSelect?.value === 'mac';
-  const dataFileName = isMac ? 'data.ios' : 'data.win';
+  const dataFileName = isMac ? 'game.ios' : 'data.win';
 
   let launcherPath = null;
   for (const path of files) {
@@ -494,7 +494,7 @@ async function ensureDir(rootDirHandle, relativePathParts) {
 // 델타룬 설치 폴더 검증
 async function validateDeltaruneFolder(dirHandle) {
   const isMac = platformSelect?.value === 'mac';
-  const dataFileName = isMac ? 'data.ios' : 'data.win';
+  const dataFileName = isMac ? 'game.ios' : 'data.win';
 
   const launcherCandidates = [
     [dataFileName]
